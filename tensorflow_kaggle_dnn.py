@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[2]:
+# In[21]:
 
 from __future__ import absolute_import
 from __future__ import division
@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import pandas as pd
 import tensorflow as tf
+tf.logging.set_verbosity(tf.logging.INFO)
 
 
 # In[3]:
@@ -30,11 +31,29 @@ print("Categorical columns {0:2d}".format(len(CATEGORICAL_COLUMNS)))
 print("Total useful columns {0:2d}".format(len(COLUMNS)))
 
 
-# In[4]:
+# In[112]:
 
 def input_clean(raw_data):
     data = raw_data.drop('Id', 1)
     data = data.replace({                            
+                            'MSSubClass':{
+                                            20:'class20',
+                                            30:'class30',
+                                            40:'class40',
+                                            45:'class45',
+                                            50:'class50',
+                                            60:'class60',
+                                            70:'class70',
+                                            75:'class75',
+                                            80:'class80',
+                                            85:'class85',
+                                            90:'class90',
+                                            120:'class120',
+                                            150:'class150',
+                                            160:'class160',
+                                            180:'class180',
+                                            190:'class190'
+                                            },
                             'MSZoning': {'C (all)': 'C'
                                             },
                             'ExterQual': {'Ex': 5, 
@@ -162,7 +181,7 @@ def input_clean(raw_data):
     return data
 
 
-# In[5]:
+# In[110]:
 
 #Check if the COLUMNS is match with the original data
 folder = '/Users/lanxing/Desktop/Machine Learning/kaggle/'
@@ -178,7 +197,7 @@ for l in COLUMNS:
 print(check_dict)
 
 
-# In[6]:
+# In[114]:
 
 folder = '/Users/lanxing/Desktop/Machine Learning/kaggle/'
 raw_train = pd.read_csv(folder+"train.csv")
@@ -189,7 +208,7 @@ while i<raw_train.describe().shape[1]:
     i=i+10
 
 
-# In[8]:
+# In[115]:
 
 #Describe the training data after cleaning
 train = input_clean(raw_train)
@@ -219,19 +238,17 @@ for l in train.columns.tolist():
         print(l)
 
 
-# In[10]:
+# In[35]:
 
 input_stat = train.describe().loc[['min','max'],:]
 input_stat = input_stat.drop('MSSubClass', 1)
-input_stat.to_csv(path+"input_stat.csv")
+max_price = input_stat.loc['max','SalePrice'].tolist()
+min_price = input_stat.loc['min','SalePrice'].tolist()
+input_stat.to_csv(folder+"input_stat.csv")
+#print(type(max_price),type(min_price))
 
 
-# In[ ]:
-
-
-
-
-# In[125]:
+# In[102]:
 
 def input_pdtotf(df):
     # Creates a dictionary mapping from each continuous feature column name (k) to
@@ -247,8 +264,77 @@ def input_pdtotf(df):
                       for k in CATEGORICAL_COLUMNS}
     # Merges the two dictionaries into one.
     feature_cols = dict(continuous_cols.items() + categorical_cols.items())
+    #feature_cols = dict(continuous_cols.items())
     # Converts the label column into a constant Tensor.
     label = tf.constant(df[LABEL_COLUMN].values)
     # Returns the feature columns and the label.
     return feature_cols, label
+
+
+
+# In[119]:
+
+#categorical_options = {}
+#for l in CATEGORICAL_COLUMNS:
+#    categorical_options[l]=train.loc[:,l].value_counts().index.values.tolist()
+#print(categorical_options)
+CATEGORICAL_OPTIONS = {'MasVnrType': ['None', 'BrkFace', 'Stone', 'BrkCmn', 'NoMasVnr'], 
+                       'LotConfig': ['Inside', 'Corner', 'CulDSac', 'FR2', 'FR3'], 
+                       'Exterior1st': ['VinylSd', 'HdBoard', 'MetalSd', 'Wd Sdng', 'Plywood', 'CemntBd', 'BrkFace', 'WdShing', 'Stucco', 'AsbShng', 'Stone', 'BrkComm', 'AsphShn', 'ImStucc', 'CBlock'], 
+                       'Electrical': ['SBrkr', 'FuseA', 'FuseF', 'FuseP', 'Mix', 'NoElec'], 
+                       'HouseStyle': ['1Story', '2Story', '1.5Fin', 'SLvl', 'SFoyer', '1.5Unf', '2.5Unf', '2.5Fin'], 
+                       'Foundation': ['PConc', 'CBlock', 'BrkTil', 'Slab', 'Stone', 'Wood'], 
+                       'GarageType': ['Attchd', 'Detchd', 'BuiltIn', 'NoGarage', 'Basment', 'CarPort', '2Types'], 
+                       'RoofStyle': ['Gable', 'Hip', 'Flat', 'Gambrel', 'Mansard', 'Shed'], 
+                       'CentralAir': ['Y', 'N'], 
+                       'Utilities': ['AllPub', 'NoSeWa'], 
+                       'LotShape': ['Reg', 'IR1', 'IR2', 'IR3'], 
+                       'MiscFeature': ['NoFtr', 'Shed', 'Othr', 'Gar2', 'TenC'], 
+                       'PavedDrive': ['Y', 'N', 'P'], 
+                       'LandSlope': ['Gtl', 'Mod', 'Sev'], 
+                       'SaleType': ['WD', 'New', 'COD', 'ConLD', 'ConLw', 'ConLI', 'CWD', 'Oth', 'Con'], 
+                       'Heating': ['GasA', 'GasW', 'Grav', 'Wall', 'OthW', 'Floor'], 
+                       'Exterior2nd': ['VinylSd', 'MetalSd', 'HdBoard', 'Wd Sdng', 'Plywood', 'CmentBd', 'Wd Shng', 'Stucco', 'BrkFace', 'AsbShng', 'ImStucc', 'Brk Cmn', 'Stone', 'AsphShn', 'Other', 'CBlock'], 
+                       'MSSubClass': ['class20', 'class60', 'class50', 'class120', 'class30', 'class160', 'class70', 'class80', 'class90', 'class190', 'class85', 'class75', 'class45', 'class180', 'class40'], 
+                       'Condition2': ['Norm', 'Feedr', 'Artery', 'RRNn', 'PosN', 'RRAn', 'RRAe', 'PosA'], 
+                       'Condition1': ['Norm', 'Feedr', 'Artery', 'RRAn', 'PosN', 'RRAe', 'PosA', 'RRNn', 'RRNe'], 
+                       'LandContour': ['Lvl', 'Bnk', 'HLS', 'Low'], 
+                       'RoofMatl': ['CompShg', 'Tar&Grv', 'WdShngl', 'WdShake', 'Membran', 'Metal', 'ClyTile', 'Roll'], 
+                       'Neighborhood': ['NAmes', 'CollgCr', 'OldTown', 'Edwards', 'Somerst', 'Gilbert', 'NridgHt', 'Sawyer', 'NWAmes', 'SawyerW', 'BrkSide', 'Crawfor', 'Mitchel', 'NoRidge', 'Timber', 'IDOTRR', 'ClearCr', 'SWISU', 'StoneBr', 'MeadowV', 'Blmngtn', 'BrDale', 'Veenker', 'NPkVill', 'Blueste'], 
+                       'Fence': ['NoFc', 'MnPrv', 'GdPrv', 'GdWo', 'MnWw'], 
+                       'SaleCondition': ['Normal', 'Partial', 'Abnorml', 'Family', 'Alloca', 'AdjLand'], 
+                       'BldgType': ['1Fam', 'TwnhsE', 'Duplex', 'Twnhs', '2fmCon'], 
+                       'Alley': ['NoAlley', 'Grvl', 'Pave'], 
+                       'Street': ['Pave', 'Grvl'], 
+                       'MSZoning': ['RL', 'RM', 'FV', 'RH', 'C']}
+
+
+# In[125]:
+
+#Defining FeatureColumns and Creating the Regressor
+# Creates features column from each continuous feature column name (k) to
+continuous_feature = [tf.contrib.layers.real_valued_column(k)
+                  for k in CONTINUOUS_COLUMNS]
+# Creates features column from each categorical feature column name (k)
+#categorical_feature = [tf.contrib.layers.embedding_column(tf.contrib.layers.sparse_column_with_keys(
+#                      column_name=k, keys=CATEGORICAL_OPTIONS[k]),dimension=8) for k in CATEGORICAL_COLUMNS]
+categorical_feature = [tf.contrib.layers.one_hot_column(tf.contrib.layers.sparse_column_with_keys(
+                      column_name=k, keys=CATEGORICAL_OPTIONS[k])) for k in CATEGORICAL_COLUMNS]
+#categorical_feature = [tf.contrib.layers.embedding_column(tf.contrib.layers.sparse_column_with_hash_bucket(k, hash_bucket_size=30),dimension=30) for k in CATEGORICAL_COLUMNS]
+
+
+feature_cols = continuous_feature + categorical_feature
+regressor = tf.contrib.learn.DNNRegressor(
+    feature_columns=feature_cols, hidden_units=[100, 100])
+
+
+# In[126]:
+
+#Training the Regressor
+regressor.fit(input_fn=lambda: input_pdtotf(train), steps=1000)
+
+
+# In[ ]:
+
+
 
