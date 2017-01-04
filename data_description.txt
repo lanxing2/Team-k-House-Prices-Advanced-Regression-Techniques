@@ -357,6 +357,7 @@ Electrical: Electrical system
        FuseF	60 AMP Fuse Box and mostly Romex wiring (Fair)
        FuseP	60 AMP Fuse Box and mostly knob & tube wiring (poor)
        Mix	Mixed
+       NA      No Electrical
 		
 1stFlrSF: First Floor square feet
  
